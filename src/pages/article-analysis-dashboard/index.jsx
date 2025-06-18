@@ -1,35 +1,38 @@
+// src/pages/article-analysis-dashboard/index.jsx
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import UrlInputForm from '@/components/UrlInputForm';
 import ProgressIndicator from '@/components/ProgressIndicator';
-import { Box, Container, Typography, Alert } from '@mui/material';
+import Header from '@/components/Header'; // Assuming Header is in this path
+import Icon from '@/components/AppIcon'; // Assuming Icon is in this path
 
 const ArticleAnalysisDashboard = () => {
   const router = useRouter();
   const [processing, setProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [urls, setUrls] = useState('');
   const [error, setError] = useState(null);
 
-  const handleSubmit = async (urlList) => {
+  // This state is for the ProgressIndicator, assuming you want to pass data to it
+  const [processingArticles, setProcessingArticles] = useState([]);
+  const [currentStep, setCurrentStep] = useState(0);
+
+
+  const handleSubmit = async (urlInput) => {
+    const urlList = urlInput.split('\n').filter(url => url.trim().length > 0);
+    if (urlList.length === 0) {
+        setError("Please enter at least one URL.");
+        return;
+    }
+
     setProcessing(true);
-    setProgress(0);
+    setProcessingArticles(urlList.map(url => ({ url, status: 'processing' })));
+    setCurrentStep(0);
     setError(null);
 
     try {
-      await processArticles(urlList);
-      router.push('/article-processing-results');
-    } catch (err) {
-      setError(`Processing failed: ${err.message}`);
-      setProcessing(false);
-    }
-  };
-
-  const processArticles = async (urlList) => {
-    try {
-      // Show initial progress
-      setProgress(10);
-
-      // Make API call to the backend
+      // Simulate progress for demonstration
+      setCurrentStep(1); // Fetching
+      
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
@@ -37,9 +40,8 @@ const ArticleAnalysisDashboard = () => {
         },
         body: JSON.stringify({ urls: urlList })
       });
-
-      // Update progress to indicate API call complete
-      setProgress(50);
+      
+      setCurrentStep(2); // Analyzing
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -47,7 +49,8 @@ const ArticleAnalysisDashboard = () => {
       }
 
       const data = await response.json();
-      setProgress(90);
+      
+      setCurrentStep(3); // Generating Summary
 
       // Store results in session storage for the results page
       sessionStorage.setItem('analysisResults', JSON.stringify({
@@ -55,39 +58,63 @@ const ArticleAnalysisDashboard = () => {
         errors: data.errors,
         processedAt: data.processedAt
       }));
+      
+      setCurrentStep(4); // Complete
+      
+      // Redirect after a short delay to show completion
+      setTimeout(() => {
+          router.push('/article-processing-results');
+      }, 1000);
 
-      // Complete progress
-      setProgress(100);
-      return data;
-    } catch (error) {
-      console.error('Error processing articles:', error);
-      throw error;
+    } catch (err) {
+      setError(`Processing failed: ${err.message}`);
+      setProcessing(false);
     }
   };
 
   return (
-    <Container maxWidth="md">
-      <Box sx={{ my: 4, textAlign: 'center' }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Article Analysis Dashboard
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 4 }}>
-          Enter article URLs below to analyze their content and generate summaries.
-        </Typography>
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="pt-24 pb-12">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            {/* Page Header */}
+            <h1 className="font-heading text-4xl font-bold text-text-primary mb-2">
+              Article Analysis Dashboard
+            </h1>
+            <p className="font-body text-lg text-text-secondary mb-8">
+              Enter article URLs below to analyze their content and generate summaries.
+            </p>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
+            {/* Error Display using a simple div and Tailwind classes */}
+            {error && (
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow-md mb-6" role="alert">
+                <div className="flex">
+                    <div className="py-1">
+                        <Icon name="AlertTriangle" size={20} className="text-red-600" strokeWidth={2}/>
+                    </div>
+                    <div className="ml-3">
+                        <p className="text-sm font-medium">{error}</p>
+                    </div>
+                </div>
+              </div>
+            )}
+            
+            {/* The main content area */}
+            <UrlInputForm
+                value={urls}
+                onChange={setUrls}
+                onSubmit={handleSubmit}
+                isProcessing={processing}
+            />
 
-        {processing ? (
-          <ProgressIndicator progress={progress} />
-        ) : (
-          <UrlInputForm onSubmit={handleSubmit} />
-        )}
-      </Box>
-    </Container>
+            <ProgressIndicator
+                isVisible={processing}
+                processingArticles={processingArticles}
+                currentStep={currentStep}
+            />
+        </div>
+      </main>
+    </div>
   );
 };
 
