@@ -1,13 +1,13 @@
 // src/pages/article-analysis-dashboard/index.jsx
 import React, { useState } from 'react';
-import { useRouter } from 'next/router';
-import UrlInputForm from '@/components/UrlInputForm';
-import ProgressIndicator from '@/components/ProgressIndicator';
-import Header from '@/components/Header';
-import Icon from '@/components/AppIcon';
+import { useNavigate } from 'react-router-dom';
+import UrlInputForm from './components/UrlInputForm.jsx';
+import ProgressIndicator from '../../components/ui/ProgressIndicator.jsx';
+import Header from '../../components/ui/Header.jsx';
+import Icon from '../../components/AppIcon.jsx';
 
 const ArticleAnalysisDashboard = () => {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [processing, setProcessing] = useState(false);
   const [urls, setUrls] = useState('');
   const [error, setError] = useState(null);
@@ -45,7 +45,7 @@ const ArticleAnalysisDashboard = () => {
       sessionStorage.setItem('analysisResults', JSON.stringify(data));
 
       setCurrentStep(4); // Complete
-      setTimeout(() => router.push('/article-processing-results'), 1000);
+      setTimeout(() => navigate('/article-processing-results'), 1000);
 
     } catch (err) {
       setError(`Processing failed: ${err.message}`);
