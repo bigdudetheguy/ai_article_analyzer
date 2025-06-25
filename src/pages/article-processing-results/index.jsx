@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Typography, Box, Button, Alert, CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ResultCard from './components/ResultCard';
+import ResultCard from './components/ResultCard.jsx';
 
 const ArticleProcessingResults = () => {
   const navigate = useNavigate();
