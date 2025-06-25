@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useNavigate } from 'react-router-dom';
 import { Container, Typography, Box, Button, Alert, CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ResultCard from '@/components/ResultCard';
+import ResultCard from './components/ResultCard.jsx';
 
 const ArticleProcessingResults = () => {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const [errors, setErrors] = useState([]);
   const [processedAt, setProcessedAt] = useState('');
@@ -33,7 +33,7 @@ const ArticleProcessingResults = () => {
   }, []);
 
   const handleBackClick = () => {
-    router.push('/article-analysis-dashboard');
+    navigate('/article-analysis-dashboard');
   };
 
   const formatDate = (dateString) => {
