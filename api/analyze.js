@@ -1,5 +1,6 @@
 // /api/analyze.js - API endpoint for article analysis
-import { NextResponse } from 'next/server';
+const express = require('express');
+const router = express.Router();
 
 // This would typically use actual NLP services or external APIs
 async function extractArticleContent(url) {
@@ -89,13 +90,12 @@ async function analyzeArticle(articleData) {
   }
 }
 
-export async function POST(request) {
+router.post('/', async (req, res) => {
   try {
-    const body = await request.json();
-    const { urls } = body;
+    const { urls } = req.body;
     
     if (!urls || !Array.isArray(urls) || urls.length === 0) {
-      return NextResponse.json({ error: "No valid URLs provided" }, { status: 400 });
+      return res.status(400).json({ error: "No valid URLs provided" });
     }
     
     // Process each URL
@@ -136,13 +136,15 @@ export async function POST(request) {
     const results = processedResults.filter(result => result.status === "completed");
     const errors = processedResults.filter(result => result.status === "error");
     
-    return NextResponse.json({
+    return res.json({
       results,
       errors,
       processedAt: new Date().toISOString()
     });
   } catch (error) {
     console.error("API error:", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return res.status(500).json({ error: "Server error" });
   }
-}
+});
+
+module.exports = router;
